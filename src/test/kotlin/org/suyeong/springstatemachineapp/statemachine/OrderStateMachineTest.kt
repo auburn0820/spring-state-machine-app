@@ -1,5 +1,6 @@
 package org.suyeong.springstatemachineapp.statemachine
 
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
@@ -61,7 +62,7 @@ class OrderStateMachineTest {
     @Test
     fun `should transition from CREATED to PAID when PAY event is triggered`() {
         // Trigger PAY event
-        val result = orderStateMachineService.triggerEvent(OrderEvents.PAY, testOrderId)
+        val result = runBlocking { orderStateMachineService.triggerEvent(OrderEvents.PAY, testOrderId) }
         
         // Verify event was accepted and state changed
         assertThat(result).isTrue
@@ -78,7 +79,7 @@ class OrderStateMachineTest {
     @Test
     fun `invalid event should not change state`() {
         // Try to trigger DELIVER event from CREATED state (invalid transition)
-        val result = orderStateMachineService.triggerEvent(OrderEvents.DELIVER, testOrderId)
+        val result = runBlocking { orderStateMachineService.triggerEvent(OrderEvents.DELIVER, testOrderId) }
         
         // Verify event was not accepted and state did not change
         assertThat(result).isFalse
@@ -106,7 +107,7 @@ class OrderStateMachineTest {
         )
         
         transitions.forEach { (event, expectedState) ->
-            val result = orderStateMachineService.triggerEvent(event, testOrderId)
+            val result = runBlocking { orderStateMachineService.triggerEvent(event, testOrderId) }
             assertThat(result).`as`("Event $event should be accepted").isTrue
             
             // Verify database state matches
@@ -144,11 +145,11 @@ class OrderStateMachineTest {
             
             // Move to the initial state if needed
             if (initialState == OrderStates.PAID) {
-                orderStateMachineService.triggerEvent(OrderEvents.PAY, newOrder.id!!)
+                runBlocking { orderStateMachineService.triggerEvent(OrderEvents.PAY, newOrder.id!!) }
             }
             
             // Try the invalid transition
-            val result = orderStateMachineService.triggerEvent(event, newOrder.id!!)
+            val result = runBlocking { orderStateMachineService.triggerEvent(event, newOrder.id!!) }
             
             // Should be rejected
             assertThat(result).`as`("Transition from $initialState with event $event should be rejected").isFalse

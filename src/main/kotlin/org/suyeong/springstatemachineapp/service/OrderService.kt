@@ -90,7 +90,7 @@ class OrderService(
     }
 
     @Transactional
-    fun processPayment(orderId: Long): Order {
+    suspend fun processPayment(orderId: Long): Order {
         val result = orderStateMachineService.triggerEventWithResult(OrderEvents.PAY, orderId)
         return when (result) {
             is Result.Success -> result.value
@@ -99,7 +99,7 @@ class OrderService(
     }
 
     @Transactional
-    fun startPreparation(orderId: Long): Order {
+    suspend fun startPreparation(orderId: Long): Order {
         val result = orderStateMachineService.triggerEventWithResult(OrderEvents.START_PREPARATION, orderId)
         return when (result) {
             is Result.Success -> result.value
@@ -108,7 +108,7 @@ class OrderService(
     }
 
     @Transactional
-    fun markReadyForDelivery(orderId: Long): Order {
+    suspend fun markReadyForDelivery(orderId: Long): Order {
         val result = orderStateMachineService.triggerEventWithResult(OrderEvents.READY_FOR_DELIVERY, orderId)
         return when (result) {
             is Result.Success -> result.value
@@ -117,7 +117,7 @@ class OrderService(
     }
 
     @Transactional
-    fun startDelivery(orderId: Long): Order {
+    suspend fun startDelivery(orderId: Long): Order {
         val result = orderStateMachineService.triggerEventWithResult(OrderEvents.START_DELIVERY, orderId)
         return when (result) {
             is Result.Success -> result.value
@@ -126,7 +126,7 @@ class OrderService(
     }
 
     @Transactional
-    fun completeDelivery(orderId: Long): Order {
+    suspend fun completeDelivery(orderId: Long): Order {
         val result = orderStateMachineService.triggerEventWithResult(OrderEvents.DELIVER, orderId)
         return when (result) {
             is Result.Success -> result.value
@@ -135,7 +135,7 @@ class OrderService(
     }
 
     @Transactional
-    fun cancelOrder(orderId: Long): Order {
+    suspend fun cancelOrder(orderId: Long): Order {
         val result = orderStateMachineService.triggerEventWithResult(OrderEvents.CANCEL, orderId)
         return when (result) {
             is Result.Success -> result.value
@@ -149,7 +149,7 @@ class OrderService(
      * Process payment using Result pattern - provides rich error information
      */
     @Transactional
-    fun processPaymentWithResult(orderId: Long): Result<Order> {
+    suspend fun processPaymentWithResult(orderId: Long): Result<Order> {
         return orderStateMachineService.triggerEventWithResult(OrderEvents.PAY, orderId)
     }
 
@@ -157,7 +157,7 @@ class OrderService(
      * Cancel order using Result pattern with detailed error handling
      */
     @Transactional
-    fun cancelOrderWithResult(orderId: Long): Result<Order> {
+    suspend fun cancelOrderWithResult(orderId: Long): Result<Order> {
         return orderStateMachineService.triggerEventWithResult(OrderEvents.CANCEL, orderId)
     }
 }

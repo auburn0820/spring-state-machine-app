@@ -81,4 +81,5 @@ class OrderStateMachineConfiguration : EnumStateMachineConfigurerAdapter<OrderSt
             .withConfiguration()
             .autoStartup(false) // We'll start each instance manually
     }
+
 }

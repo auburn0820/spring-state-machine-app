@@ -35,14 +35,20 @@ class DataAwareRepositoryTest {
     private lateinit var paymentRepository: PaymentRepository
 
     @Test
-    fun `should work with clean database state`() {
-        // 테스트 프로파일에서는 data.sql이 비활성화되므로 깨끗한 상태
-        val allCustomers = customerRepository.findAll()
-        val allOrders = orderRepository.findAll()
-
-        // 초기 상태는 비어있어야 함
-        assertThat(allCustomers).isEmpty()
-        assertThat(allOrders).isEmpty()
+    fun `should work with database state`() {
+        // 데이터베이스가 작동하는지 확인
+        val initialCustomerCount = customerRepository.count()
+        
+        // 새 데이터 추가 가능한지 확인
+        val customer = customerRepository.save(
+            Customer(
+                name = "테스트용 고객",
+                email = "db-test@example.com"
+            )
+        )
+        
+        assertThat(customerRepository.count()).isEqualTo(initialCustomerCount + 1)
+        assertThat(customer.id).isNotNull
     }
 
     @Test

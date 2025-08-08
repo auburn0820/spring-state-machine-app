@@ -9,8 +9,6 @@ import org.suyeong.springstatemachineapp.dto.*
 import org.suyeong.springstatemachineapp.service.OrderService
 import org.suyeong.springstatemachineapp.statemachine.OrderStates
 import org.suyeong.springstatemachineapp.common.Result
-import org.suyeong.springstatemachineapp.common.onSuccess
-import org.suyeong.springstatemachineapp.common.onError
 import java.time.LocalDateTime
 
 @RestController
@@ -88,37 +86,37 @@ class OrderController(
     }
     
     @PostMapping("/{id}/pay")
-    fun processPayment(@PathVariable id: Long): ResponseEntity<OrderResponse> {
+    suspend fun processPayment(@PathVariable id: Long): ResponseEntity<OrderResponse> {
         val order = orderService.processPayment(id)
         return ResponseEntity.ok(OrderResponse.from(order))
     }
     
     @PostMapping("/{id}/start-preparation")
-    fun startPreparation(@PathVariable id: Long): ResponseEntity<OrderResponse> {
+    suspend fun startPreparation(@PathVariable id: Long): ResponseEntity<OrderResponse> {
         val order = orderService.startPreparation(id)
         return ResponseEntity.ok(OrderResponse.from(order))
     }
     
     @PostMapping("/{id}/ready-for-delivery")
-    fun markReadyForDelivery(@PathVariable id: Long): ResponseEntity<OrderResponse> {
+    suspend fun markReadyForDelivery(@PathVariable id: Long): ResponseEntity<OrderResponse> {
         val order = orderService.markReadyForDelivery(id)
         return ResponseEntity.ok(OrderResponse.from(order))
     }
     
     @PostMapping("/{id}/start-delivery")
-    fun startDelivery(@PathVariable id: Long): ResponseEntity<OrderResponse> {
+    suspend fun startDelivery(@PathVariable id: Long): ResponseEntity<OrderResponse> {
         val order = orderService.startDelivery(id)
         return ResponseEntity.ok(OrderResponse.from(order))
     }
     
     @PostMapping("/{id}/deliver")
-    fun completeDelivery(@PathVariable id: Long): ResponseEntity<OrderResponse> {
+    suspend fun completeDelivery(@PathVariable id: Long): ResponseEntity<OrderResponse> {
         val order = orderService.completeDelivery(id)
         return ResponseEntity.ok(OrderResponse.from(order))
     }
     
     @PostMapping("/{id}/cancel")
-    fun cancelOrder(@PathVariable id: Long): ResponseEntity<OrderResponse> {
+    suspend fun cancelOrder(@PathVariable id: Long): ResponseEntity<OrderResponse> {
         val order = orderService.cancelOrder(id)
         return ResponseEntity.ok(OrderResponse.from(order))
     }
@@ -129,16 +127,8 @@ class OrderController(
      * Process payment using Result pattern - returns detailed error information
      */
     @PostMapping("/{id}/pay-with-result")
-    fun processPaymentWithResult(@PathVariable id: Long): ResponseEntity<Any> {
+    suspend fun processPaymentWithResult(@PathVariable id: Long): ResponseEntity<Any> {
         return orderService.processPaymentWithResult(id)
-            .onSuccess { order ->
-                // Log successful state transition
-                println("Successfully processed payment for order ${order.id}")
-            }
-            .onError { exception ->
-                // Log error for monitoring
-                println("Failed to process payment for order $id: ${exception.message}")
-            }
             .let { result ->
                 when (result) {
                     is Result.Success -> ResponseEntity.ok(OrderResponse.from(result.value))
@@ -158,14 +148,8 @@ class OrderController(
      * Cancel order using Result pattern with rich error handling
      */
     @PostMapping("/{id}/cancel-with-result")
-    fun cancelOrderWithResult(@PathVariable id: Long): ResponseEntity<Any> {
+    suspend fun cancelOrderWithResult(@PathVariable id: Long): ResponseEntity<Any> {
         return orderService.cancelOrderWithResult(id)
-            .onSuccess { order ->
-                println("Successfully cancelled order ${order.id}")
-            }
-            .onError { exception ->
-                println("Failed to cancel order $id: ${exception.message}")
-            }
             .let { result ->
                 when (result) {
                     is Result.Success -> ResponseEntity.ok(OrderResponse.from(result.value))

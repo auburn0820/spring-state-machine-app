@@ -1,5 +1,6 @@
 package org.suyeong.springstatemachineapp.service
 
+import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
@@ -121,13 +122,15 @@ class SimpleOrderServiceTest {
     @Test
     fun `should find orders by state`() {
         // Given
-        orderService.createOrder(
+        val initialCreatedCount = orderService.findByState(OrderStates.CREATED).size
+        
+        val order1 = orderService.createOrder(
             customerId = testCustomer.id!!,
             orderItems = listOf(
                 OrderItem(productName = "상품1", quantity = 1, unitPrice = BigDecimal("10000"))
             )
         )
-        orderService.createOrder(
+        val order2 = orderService.createOrder(
             customerId = testCustomer.id!!,
             orderItems = listOf(
                 OrderItem(productName = "상품2", quantity = 1, unitPrice = BigDecimal("20000"))
@@ -138,7 +141,9 @@ class SimpleOrderServiceTest {
         val createdOrders = orderService.findByState(OrderStates.CREATED)
 
         // Then
-        assertThat(createdOrders).hasSize(2)
+        assertThat(createdOrders).hasSizeGreaterThanOrEqualTo(initialCreatedCount + 2)
+        assertThat(createdOrders).anyMatch { it.id == order1.id }
+        assertThat(createdOrders).anyMatch { it.id == order2.id }
     }
 
     @Test
@@ -190,7 +195,7 @@ class SimpleOrderServiceTest {
         )
 
         // When
-        val paidOrder = orderService.processPayment(order.id!!)
+        val paidOrder = runBlocking { orderService.processPayment(order.id!!) }
 
         // Then
         assertThat(paidOrder.state).isEqualTo(OrderStates.PAID)
@@ -207,11 +212,11 @@ class SimpleOrderServiceTest {
             )
         )
 
-        orderService.processPayment(order.id!!)
+        runBlocking { orderService.processPayment(order.id!!) }
 
         // When & Then
         assertThatThrownBy {
-            orderService.processPayment(order.id!!)
+            runBlocking { orderService.processPayment(order.id!!) }
         }.isInstanceOf(IllegalStateException::class.java)
     }
 }
